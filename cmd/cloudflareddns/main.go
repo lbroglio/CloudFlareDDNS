@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/lbroglio/CloudFlareDDNS/internal/client"
@@ -18,7 +19,7 @@ func getIdsOfRecordsThatNeedUpdating(targetDNSRecordIDs []string, lastKnownIPs m
 			// If there's no last known IP for this record check the current IP from Cloudflare
 			dnsRecordDetails, err := cloudflareClient.GetDNSRecordDetails(recordID)
 			if err != nil {
-				panic(err)
+				log.Fatalf("Error fetching DNS record details for record ID %s: %v", recordID, err)
 			}
 			lastKnownIP = dnsRecordDetails.Content
 			// Update the last known IP in the map for future reference
@@ -43,20 +44,20 @@ func main() {
 	targetDNSRecordIDs := config.GetTargetDNSRecordIDs()
 
 	if len(targetDNSRecordIDs) == 0 {
-		panic("No target DNS record IDs found in configuration. Please provide at least one DNS record ID to update.")
+		log.Fatalf("No target DNS record IDs found in configuration. Please provide at least one DNS record ID to update.")
 	}
 
 	// Load the cached public
 	recordCache, err := persistence.GetState()
 	if err != nil {
-		panic(err)
+		log.Fatalf("Error loading state: %v", err)
 	}
 
 	// Get the current public IP address
 	hazipClient := client.NewICanHazIPClient()
 	publicIP, err := hazipClient.GetPublicIP()
 	if err != nil {
-		panic(err)
+		log.Fatalf("Error fetching public IP: %v", err)
 	}
 	publicIP = strings.TrimSpace(publicIP)
 
@@ -68,7 +69,7 @@ func main() {
 		persistence.WriteLogLine(fmt.Sprintf("Updating DNS record %s to new IP: %s", recordID, publicIP))
 		err := cloudflareClient.UpdateDNSRecordContent(recordID, publicIP)
 		if err != nil {
-			panic(err)
+			log.Fatalf("Error updating DNS record %s: %v", recordID, err)
 		}
 		recordCache.LastKnownIPsForDNS[recordID] = publicIP
 	}
