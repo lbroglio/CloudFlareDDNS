@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/lbroglio/CloudFlareDDNS/internal/client"
 	"github.com/lbroglio/CloudFlareDDNS/internal/config"
@@ -20,7 +21,11 @@ func getIdsOfRecordsThatNeedUpdating(targetDNSRecordIDs []string, lastKnownIPs m
 				panic(err)
 			}
 			lastKnownIP = dnsRecordDetails.Content
+			// Update the last known IP in the map for future reference
+			lastKnownIPs[recordID] = lastKnownIP
 		}
+		lastKnownIP = strings.TrimSpace(lastKnownIP)
+		currentPublicIP = strings.TrimSpace(currentPublicIP)
 
 		if lastKnownIP != currentPublicIP {
 			recordsNeedUpdating = append(recordsNeedUpdating, recordID)
@@ -53,6 +58,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	publicIP = strings.TrimSpace(publicIP)
 
 	cloudflareClient := client.NewCloudFlareClient()
 	recordsToUpdate := getIdsOfRecordsThatNeedUpdating(targetDNSRecordIDs, recordCache.LastKnownIPsForDNS, publicIP, cloudflareClient)

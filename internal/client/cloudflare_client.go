@@ -136,7 +136,6 @@ func (c *CloudFlareClient) UpdateDNSRecordContent(dnsRecordID string, newContent
 	if err != nil {
 		return fmt.Errorf("failed to send request: %v", err)
 	}
-
 	// Close the response body after use to avoid memory leaks
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
