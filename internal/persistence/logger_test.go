@@ -48,7 +48,7 @@ func TestWriteLogLine(t *testing.T) {
 	loggerTestSetup(t)
 
 	logLine := "This is a test log line."
-	err := writeLogLine(logLine)
+	err := WriteLogLine(logLine)
 
 	if err != nil {
 		t.Errorf("writeLogLine() returned an error: %v", err)

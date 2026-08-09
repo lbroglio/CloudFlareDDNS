@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/lbroglio/CloudFlareDDNS/internal/client"
 	"github.com/lbroglio/CloudFlareDDNS/internal/config"
 	"github.com/lbroglio/CloudFlareDDNS/internal/persistence"
@@ -22,7 +24,11 @@ func getIdsOfRecordsThatNeedUpdating(targetDNSRecordIDs []string, lastKnownIPs m
 
 		if lastKnownIP != currentPublicIP {
 			recordsNeedUpdating = append(recordsNeedUpdating, recordID)
+			persistence.WriteLogLine(fmt.Sprintf("DNS record %s needs updating. Last known IP: %s, Current public IP: %s", recordID, lastKnownIP, currentPublicIP))
+		} else {
+			persistence.WriteLogLine(fmt.Sprintf("DNS record %s does not need updating. Current IP: %s", recordID, currentPublicIP))
 		}
+
 	}
 
 	return recordsNeedUpdating
@@ -53,6 +59,7 @@ func main() {
 
 	// Update the DNS records that need updating
 	for _, recordID := range recordsToUpdate {
+		persistence.WriteLogLine(fmt.Sprintf("Updating DNS record %s to new IP: %s", recordID, publicIP))
 		err := cloudflareClient.UpdateDNSRecordContent(recordID, publicIP)
 		if err != nil {
 			panic(err)

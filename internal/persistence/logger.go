@@ -31,7 +31,7 @@ func getLogFilePath() string {
 }
 
 // writeLogLine appends a log line to the log file for the current date.
-func writeLogLine(contents string) error {
+func WriteLogLine(contents string) error {
 	err := ensureLogDirectoryExists()
 
 	if err != nil {
