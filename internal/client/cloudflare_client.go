@@ -2,6 +2,7 @@ package client
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -13,6 +14,32 @@ import (
 type CloudFlareClient struct {
 	HttpClient *http.Client
 	APIURL     string
+}
+
+// DNSRecordDetails represents the details of a DNS record returned by the Cloudflare API.
+type DNSRecordDetails struct {
+	Id                string                 `json:"id"`
+	Name              string                 `json:"name"`
+	Type              string                 `json:"type"`
+	Content           string                 `json:"content"`
+	Proxiable         bool                   `json:"proxiable"`
+	Proxied           bool                   `json:"proxied"`
+	TTL               int                    `json:"ttl"`
+	Settings          map[string]interface{} `json:"settings"`
+	Meta              map[string]interface{} `json:"meta"`
+	Comment           string                 `json:"comment"`
+	Tags              []string               `json:"tags"`
+	CreatedOn         string                 `json:"created_on"`
+	ModifiedOn        string                 `json:"modified_on"`
+	CommentModifiedOn string                 `json:"comment_modified_on"`
+}
+
+// DNSRecordResponse represents the response from the Cloudflare API when fetching DNS record details.
+type DNSRecordResponse struct {
+	Success  bool             `json:"success"`
+	Errors   []interface{}    `json:"errors"`
+	Messages []interface{}    `json:"messages"`
+	Result   DNSRecordDetails `json:"result"`
 }
 
 // NewCloudFlareClient creates a new instance of CloudFlareClient with default settings.
@@ -44,6 +71,43 @@ func (c *CloudFlareClient) buildRequestForURL(path string, requestType string) (
 	req.Header.Set("Authorization", "Bearer "+apiToken)
 
 	return req, nil
+}
+
+// GetDNSRecordDetails fetches the details of a DNS record from Cloudflare using the provided DNS record ID.
+// It returns a DNSRecordDetails struct containing the record details and an error
+// if any occurred during the request or response processing.
+func (c *CloudFlareClient) GetDNSRecordDetails(dnsRecordID string) (DNSRecordDetails, error) {
+	if dnsRecordID == "" {
+		return DNSRecordDetails{}, fmt.Errorf("dnsRecordID cannot be empty")
+	}
+	req, err := c.buildRequestForURL("/client/v4/zones/"+config.GetCloudflareZoneID()+"/dns_records/"+dnsRecordID, "GET")
+	if err != nil {
+		return DNSRecordDetails{}, fmt.Errorf("failed to build request: %v", err)
+	}
+
+	resp, err := c.HttpClient.Do(req)
+	if err != nil {
+		return DNSRecordDetails{}, fmt.Errorf("failed to send request: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return DNSRecordDetails{}, fmt.Errorf("unexpected status code for %s request: %d", c.APIURL, resp.StatusCode)
+	}
+
+	responseBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return DNSRecordDetails{}, fmt.Errorf("failed to read response body: %v", err)
+	}
+
+	response := DNSRecordResponse{}
+	json.Unmarshal(responseBytes, &response)
+
+	if !response.Success {
+		return DNSRecordDetails{}, fmt.Errorf("failed to get DNS record details: %v", response.Errors)
+	}
+
+	return response.Result, nil
 }
 
 // UpdateDNSRecordContent updates the content of a DNS record in Cloudflare.
