@@ -9,6 +9,7 @@ import (
 	"github.com/lbroglio/CloudFlareDDNS/internal/config"
 )
 
+// CloudFlareClient is a client for interacting with the Cloudflare API.
 type CloudFlareClient struct {
 	HttpClient *http.Client
 	APIURL     string
@@ -23,6 +24,9 @@ func NewCloudFlareClient() *CloudFlareClient {
 	}
 }
 
+// buildRequestForURL constructs an HTTP request for the given path and request type.
+// It sets the Authorization header using the Cloudflare API token from the configuration.
+// Returns an error if the path is empty or if the request type is invalid.
 func (c *CloudFlareClient) buildRequestForURL(path string, requestType string) (*http.Request, error) {
 	if path == "" {
 		return nil, fmt.Errorf("path cannot be empty")
@@ -42,6 +46,9 @@ func (c *CloudFlareClient) buildRequestForURL(path string, requestType string) (
 	return req, nil
 }
 
+// UpdateDNSRecordContent updates the content of a DNS record in Cloudflare.
+// It takes the DNS record ID and the new content as parameters.
+// Returns an error if the DNS record ID or new content is empty, or if the request fails.
 func (c *CloudFlareClient) UpdateDNSRecordContent(dnsRecordID string, newContent string) error {
 	if dnsRecordID == "" {
 		return fmt.Errorf("dnsRecordID cannot be empty")
