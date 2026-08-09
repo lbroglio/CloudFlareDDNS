@@ -5,7 +5,7 @@ COPY . .
 
 RUN make test build-static
 
-FROM scratch
+FROM alpine:latest
 
 COPY --from=builder /app/bin/cloudflareddns /usr/local/bin/cloudflareddns
 
