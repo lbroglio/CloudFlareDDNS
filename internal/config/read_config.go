@@ -13,3 +13,8 @@ import "os"
 func GetPersistenceRootPath() string {
 	return os.Getenv("CLOUDFLAREDDNS_PERSISTENCE_ROOT")
 }
+
+// Get the Cloudflare API token from the environment variable.
+func GetCloudflareAPIToken() string {
+	return os.Getenv("CLOUDFLAREDDNS_API_TOKEN")
+}

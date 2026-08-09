@@ -6,11 +6,14 @@ import (
 	"net/http"
 )
 
+// ICanHazIPClient is a client for fetching the public IP address of the machine using the ICanHazIP API.
 type ICanHazIPClient struct {
 	HttpClient *http.Client
 	APIURL     string
 }
 
+// NewICanHazIPClient creates a new instance of ICanHazIPClient with default settings.
+// It uses the default HTTP client and the URL https://ipv4.icanhazip.com.
 func NewICanHazIPClient() *ICanHazIPClient {
 	return &ICanHazIPClient{
 		HttpClient: http.DefaultClient,
@@ -18,6 +21,8 @@ func NewICanHazIPClient() *ICanHazIPClient {
 	}
 }
 
+// GetPublicIP fetches the public IP address of the machine by making a GET request to the ICanHazIP API.
+// It returns the public IP address as a string and an error if any occurred during the request or response processing.
 func (c *ICanHazIPClient) GetPublicIP() (string, error) {
 	resp, err := c.HttpClient.Get(c.APIURL)
 	if err != nil {
