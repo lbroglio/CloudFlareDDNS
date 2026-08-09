@@ -18,3 +18,8 @@ func GetPersistenceRootPath() string {
 func GetCloudflareAPIToken() string {
 	return os.Getenv("CLOUDFLAREDDNS_API_TOKEN")
 }
+
+// Get the Cloudflare Zone ID from the environment variable.
+func GetCloudflareZoneID() string {
+	return os.Getenv("CLOUDFLAREDDNS_ZONE_ID")
+}
