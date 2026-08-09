@@ -8,13 +8,13 @@ import (
 	"github.com/lbroglio/CloudFlareDDNS/internal/config"
 )
 
-func testSetup(t *testing.T) {
+func loggerTestSetup(t *testing.T) {
 	testPeristenceRoot, _ := os.MkdirTemp(os.TempDir(), "test_persistence_root")
 	t.Setenv("CLOUDFLAREDDNS_PERSISTENCE_ROOT", testPeristenceRoot)
 }
 
 func TestEnsureLogDirectoryExists(t *testing.T) {
-	testSetup(t)
+	loggerTestSetup(t)
 
 	err := ensureLogDirectoryExists()
 	if err != nil {
@@ -32,7 +32,7 @@ func TestEnsureLogDirectoryExists(t *testing.T) {
 }
 
 func TestGetLogFilePath(t *testing.T) {
-	testSetup(t)
+	loggerTestSetup(t)
 
 	logFilePath := getLogFilePath()
 	date := time.Now().Format("2006-01-02")
@@ -45,7 +45,7 @@ func TestGetLogFilePath(t *testing.T) {
 }
 
 func TestWriteLogLine(t *testing.T) {
-	testSetup(t)
+	loggerTestSetup(t)
 
 	logLine := "This is a test log line."
 	err := writeLogLine(logLine)
