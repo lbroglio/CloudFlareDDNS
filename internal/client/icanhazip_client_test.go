@@ -35,3 +35,42 @@ func TestGetPublicIP_Success(t *testing.T) {
 		t.Errorf("Expected returned IP to be '1.2.3.4', got: %s", ip)
 	}
 }
+
+func TestGetPublicIP_FailedRequest(t *testing.T) {
+	mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+
+	}))
+	defer mockServer.Close()
+
+	client := NewICanHazIPClient()
+	// Use the mock server's client
+	client.HttpClient = mockServer.Client()
+	// Override the API URL to point to the mock server
+	client.APIURL = mockServer.URL
+
+	// Call the function under test
+	_, err := client.GetPublicIP()
+	if err == nil {
+		t.Fatalf("Expected GetPublicIP to throw an error on failed request")
+	}
+}
+
+func TestGetPublicIP_UnexpectedStatusCode(t *testing.T) {
+	mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNotFound)
+	}))
+	defer mockServer.Close()
+
+	client := NewICanHazIPClient()
+	// Use the mock server's client
+	client.HttpClient = mockServer.Client()
+	// Override the API URL to point to the mock server
+	client.APIURL = mockServer.URL
+
+	// Call the function under test
+	_, err := client.GetPublicIP()
+	if err == nil {
+		t.Fatalf("Expected GetPublicIP to throw an error on for invalid status code")
+	}
+}
