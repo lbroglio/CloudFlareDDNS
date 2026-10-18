@@ -8,9 +8,10 @@ import (
 	"github.com/lbroglio/CloudFlareDDNS/internal/client"
 	"github.com/lbroglio/CloudFlareDDNS/internal/config"
 	"github.com/lbroglio/CloudFlareDDNS/internal/persistence"
+	cfclient "github.com/lbroglio/CloudFlareUtilityClient"
 )
 
-func getIdsOfRecordsThatNeedUpdating(targetDNSRecordIDs []string, lastKnownIPs map[string]string, currentPublicIP string, cloudflareClient *client.CloudFlareClient) []string {
+func getIdsOfRecordsThatNeedUpdating(targetDNSRecordIDs []string, lastKnownIPs map[string]string, currentPublicIP string, cloudflareClient *cfclient.CloudFlareClient) []string {
 	// Slice to hold the IDs of DNS records that need updating
 	recordsNeedUpdating := make([]string, 0, 10)
 	for _, recordID := range targetDNSRecordIDs {
@@ -61,7 +62,7 @@ func main() {
 	}
 	publicIP = strings.TrimSpace(publicIP)
 
-	cloudflareClient := client.NewCloudFlareClient()
+	cloudflareClient := cfclient.NewCloudFlareClient(config.GetCloudflareAPIToken(), config.GetCloudflareZoneID())
 	recordsToUpdate := getIdsOfRecordsThatNeedUpdating(targetDNSRecordIDs, recordCache.LastKnownIPsForDNS, publicIP, cloudflareClient)
 
 	// Update the DNS records that need updating
